@@ -11,7 +11,7 @@ using napari viewer
 
 import cv2
 from matplotlib import pyplot as plt
-from ucvtk.blobs.blob_management_napari import open_blob_management
+from ucvtk.blobs.blob_management_napari import open_blob_management, stats_dict_to_str
 
 # %%a
 
@@ -43,5 +43,29 @@ selected_blobs = open_blob_management(imgThres, labels)
 
 # selected_blobs is the new label image (numpry.ndarray) of the blobs you have selected.
 
-# Display your selection on a new blob management viewer
+# Display your selection on a new blob management viewer.
 again = open_blob_management(imgThres, selected_blobs)
+
+
+# %%
+
+# If you are not aligned with the default blob statistics,
+# you can pass your own function.
+# For example the function below will return the main moments (the diagonal).
+
+def custom_stats_on_blob(binarySingleBlobImg):
+
+    statsretval, clickedlabels, blobstats, blobcentroids = cv2.connectedComponentsWithStats(binarySingleBlobImg, connectivity=8)
+    outDict = {}
+
+    if(statsretval >= 2):
+        # index 0 is background
+        allMoments = cv2.moments(clickedlabels, binaryImage=True)
+        outDict = dict((k,allMoments[k]) for k in ('m00','m11') if k in allMoments)
+        return stats_dict_to_str(outDict)
+    else:
+        return f'stats_on_blob returned {statsretval}'
+
+
+# This function is passed to the blob management gui.
+open_blob_management(imgThres, labels, funcInfoBlobs=custom_stats_on_blob)
