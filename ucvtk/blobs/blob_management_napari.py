@@ -40,8 +40,6 @@ def open_blob_management(img: numpy.ndarray, labels: numpy.ndarray, funcInfoBlob
     Press 'a' (for 'adding') to add the blobs you click on to a selection (see return).
     Press 'r' (for 'removing') to remove a blob you have previously selected.
 
-    TODO : blob info 's'
-
     Parameters
     ----------
     img : numpy.ndarray
