@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Drawing Region Of Interest (ROI) on images
-using napari viewer
+Studying blob (connected components) statistics/metrics,
+and sorting/selecting blobs
+by clicking on the blobs
+using napari viewer.
 
 @author: Boris Bocquet <b.bocquet@akeoplus.com>
 @license: LGPL V3.0
