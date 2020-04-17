@@ -35,10 +35,6 @@ def open_interactive_histogram(img, convert_3ch_image = True, convert = cv2.COLO
         roi_layer = _layer_rect(imgconv, viewer)
         roi_layer.mode = 'select'
 
-        #does not work : it looks like this is disconnecting the napari events (so unable to move the rectangle)        
-        #roi_layer.on_mouse_release = _mouse_release
-        #roi_layer.on_mouse_move = _mouse_move
-
         #TODO LATER : use roi_layer.to_masks
         
         @roi_layer.mouse_drag_callbacks.append
@@ -46,24 +42,13 @@ def open_interactive_histogram(img, convert_3ch_image = True, convert = cv2.COLO
             print("mouse_drag_callbacks {0}".format(datetime.datetime.now()))
             global _mode
             _mode = MODE_DRAG
-
-        @roi_layer.mouse_move_callbacks.append
-        def mouse_move(layer, event):
-            global _mode
-            if(_mode == MODE_DRAG):
-                print("TODO STOP UPDATE {0}".format(datetime.datetime.now()))
-            _mode = None            
-        
+            roi_layer.mouse_move_callbacks.append(_mouse_move)
 
 
-def _mouse_release(event):
-    #print("_mouse_release {0}".format(datetime.datetime.now()))
+def _mouse_move(layer, event):
     global _mode
-    _mode = None
-
-
-def _mouse_move(event):
-    global _mode
-    #if(_mode == MODE_DRAG):
-        #print("_mouse_move {0}".format(datetime.datetime.now()))
+    if(_mode == MODE_DRAG):
+        print("TODO STOP UPDATE {0}".format(datetime.datetime.now()))
+        layer.mouse_move_callbacks.remove(_mouse_move)
+    _mode = None            
 
