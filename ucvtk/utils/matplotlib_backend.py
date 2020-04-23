@@ -12,6 +12,7 @@ import matplotlib as mpl
 import IPython as ip
 
 _backend = ''
+NOT_IMPLEMENTED = 'not implemented'
 
 # %%
 
@@ -35,7 +36,7 @@ def set_backend_inline():
         if(_backend.count('Qt')):
             backend_prev = 'qt'
         else:
-            backend_prev = 'not implemented'
+            backend_prev = NOT_IMPLEMENTED
 
         _debug_print('force backend inline, because current is ', backend_prev)
         set_backend('inline')
@@ -50,7 +51,7 @@ def set_backend_qt():
         if(_backend.count('inline')):
             backend_prev = 'inline'
         else:
-            backend_prev = 'not implemented'
+            backend_prev = NOT_IMPLEMENTED
 
         _debug_print('force backend Qt, because current is ', backend_prev)
         set_backend('qt')
