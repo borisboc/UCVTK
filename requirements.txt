@@ -1,0 +1,5 @@
+numpy
+matplotlib
+pyqt5
+opencv-python
+napari>=0.2.12

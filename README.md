@@ -17,12 +17,13 @@ Currently, the features are :
 
 ## Requirements
 
-* **numpy** 1.18.1
-* **matplotlib** 3.1.3
-* **opencv** 3.4.1
-* **napari** 0.2.12
+* **numpy** (1.18.1, 1.19.1)
+* **matplotlib** (3.1.3, 3.3.1)
+* **pyqt5** (5.15.0)
+* **opencv** (3.4.1, 4.4.0.42)
+* **napari** (0.2.12, 0.3.6)
 
-These are at versions the package I have tested / validated. It should probably work with other versions.
+The written package version are the versions I used while implementing the project. So I considere this version as tested / validated. It should very probably work with other versions.
 
 ## Installation
 
@@ -31,6 +32,11 @@ An installation procedure should come later. Basically, install all dependencies
 Then you can clone the codes of this repository : 
 ```shell
 git clone https://github.com/AKEOPLUS-boris-bocquet/UCVTK.git
+```
+If needed, install the requirements : 
+```shell
+cd UCVTK
+python3 pip install -r requirements.txt
 ```
 
 You can run the samples (see Testing paragraph).

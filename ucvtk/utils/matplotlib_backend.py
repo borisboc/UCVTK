@@ -24,7 +24,8 @@ def _debug_print(*message):
 
 def update_backend():
     global _backend
-    _backend = mpl.backends.matplotlib.backends.backend.title()
+    #_backend = mpl.backends.matplotlib.backends.backend.title() #worked with matplotlib 3.1.3, but not with 3.3.1. BB 20200823
+    _backend = mpl.backends.backend.title() #should work with both matplotlib 3.1.3 and matplotlib 3.3.1. BB 20200823
     _debug_print('update_backend returns ', _backend)
 
 def set_backend_inline():
