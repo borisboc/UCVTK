@@ -36,7 +36,7 @@ ret, imgThres = cv2.threshold(imgGray, 100, 255, cv2.THRESH_BINARY)
 retval, labels = cv2.connectedComponents(imgThres)
 
 # Then open the viewer to get some infos on the blobs, and select blobs you click on.
-# Press 'i' (for 'info') to get some informations on the blob you click onto.
+# Press 's' (for 'stats') to get some informations on the blob you click onto.
 # Press 'a' (for 'adding') to add the blobs you click on to a selection (see return).
 # Press 'r' (for 'removing') to remove a blob you have previously selected.
 selected_blobs = open_blob_management(imgThres, labels)

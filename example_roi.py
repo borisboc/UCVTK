@@ -52,7 +52,7 @@ rect = draw_rectangle(img)
 # If you don't, the channels will be wrongly displayed
 
 # So here is how to convert.
-rect_again = draw_rectangle(imgMatplotlib, convert=False)
+rect_again = draw_rectangle(imgMatplotlib, convert_3ch_image=False)
 
 # %%
 # Of course, grayscale / single channel is handled
