@@ -1,6 +1,7 @@
-numpy
-matplotlib
+wheel
+napari>=0.4.9
 pyqt5
 opencv-python
-napari>=0.2.12
+matplotlib
+numpy
 mplcursors
