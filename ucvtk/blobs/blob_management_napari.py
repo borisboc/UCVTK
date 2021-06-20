@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Drawing Region Of Interest (ROI) on images
-using napari viewer
+Studying blob (connected components) statistics/metrics,
+and sorting/selecting blobs
+by clicking on the blobs
+using napari viewer.
 
 @author: Boris Bocquet <b.bocquet@akeoplus.com>
 @license: LGPL V3.0
@@ -28,7 +30,7 @@ mode = None
 _func_info = None
 
 
-def open_blob_management(img: numpy.ndarray, labels: numpy.ndarray, funcInfoBlobs: Callable[[],str]=None) -> numpy.ndarray:
+def open_blob_management(img: numpy.ndarray, labels: numpy.ndarray, funcInfoBlobs: Callable[[],str]=None, convert_3ch_image: bool = True, convert: int = cv2.COLOR_BGR2RGB) -> numpy.ndarray:
     """
     Open a napari viewer where the blobs are displayed.
     The viewer is an interactive GUI where you can click on the blobs.
@@ -52,6 +54,11 @@ def open_blob_management(img: numpy.ndarray, labels: numpy.ndarray, funcInfoBlob
         It will return some informations on the blob as string output.
         This string is displayed on the napari 'status' (bottom left).
         The default is None.
+    convert_3ch_image : bool, optional
+        If you want to enable an opencv convertion. The default is True.
+    convert : int, optional
+        The convertion to apply on the input image. See opencv cv2.cvtColor
+        documentation. The default is cv2.COLOR_BGR2RGB.
 
     Returns
     -------
@@ -66,71 +73,77 @@ def open_blob_management(img: numpy.ndarray, labels: numpy.ndarray, funcInfoBlob
 
     global _func_info
     _func_info = funcInfoBlobs
+    
+    img_conv = convert_BGR2RGB(img, convert_3ch_image, convert)
 
-    with napari.gui_qt():
-        viewer = napari.view_image(img)
-        viewer.title = 'Blob analysis and selection'
+    viewer = napari.Viewer()
+    viewer.add_image(img_conv)
+    viewer.title = 'Blob analysis and selection'
 
-        # add the labels
-        global selected_labels_layer
-        selected_labels = numpy.copy(labels)
-        selected_labels[:] = 0
-        selected_labels_layer = viewer.add_labels(selected_labels, name='selected blobs', visible=True)
+    # add the labels
+    global selected_labels_layer
+    selected_labels = numpy.copy(labels)
+    selected_labels[:] = 0
+    selected_labels_layer = viewer.add_labels(selected_labels, name='selected blobs', visible=True)
 
-        labels_layer = viewer.add_labels(labels, name='blobs')
+    labels_layer = viewer.add_labels(labels, name='blobs')
 
-        @viewer.bind_key('a')
-        def add_blob(viewer):
-            global mode
-            mode = MODE_ADD
-            viewer.title = ADDING_BLOBS
+    @viewer.bind_key('a')
+    def add_blob(viewer):
+        global mode
+        mode = MODE_ADD
+        viewer.title = ADDING_BLOBS
 
-        @viewer.bind_key('r')
-        def remove_blob(viewer):
-            global mode
-            mode = MODE_REMOVE
-            viewer.title = REMOVING_BLOBS
+    @viewer.bind_key('r')
+    def remove_blob(viewer):
+        global mode
+        mode = MODE_REMOVE
+        viewer.title = REMOVING_BLOBS
 
-        @viewer.bind_key('s')
-        def info_blob(viewer):
-            global mode
-            mode = MODE_INFO
-            viewer.title = INFO_BLOBS
+    @viewer.bind_key('s')
+    def info_blob(viewer):
+        global mode
+        mode = MODE_INFO
+        viewer.title = INFO_BLOBS
 
-        @labels_layer.mouse_drag_callbacks.append
-        def get_connected_component_shape(layer, event):
-            cords = numpy.round(layer.coordinates).astype(int)
-            val = layer.get_value()
-            msg = ''
-            if val is None:
-                return
-            if val != 0:
-                data = layer.data
-                binary = data == val
+    @labels_layer.mouse_drag_callbacks.append
+    def get_connected_component_shape(layer, event):
+        cursor_position_world = viewer.cursor.position
+        cursor_position_data = layer.world_to_data(cursor_position_world)
+        coords = numpy.round(cursor_position_data).astype(int)
+        val = layer.get_value(coords)
+        msg = ''
+        if val is None:
+            return
+        if val != 0:
+            data = layer.data
+            binary = data == val
 
-                global selected_labels_layer
-                selected_labels = selected_labels_layer.data
+            global selected_labels_layer
+            selected_labels = selected_labels_layer.data
 
-                if(mode == MODE_ADD):
-                    selected_labels[binary] = data[binary]
-                    msg = f'clicked at {cords} on blob {val}'
-                elif(mode == MODE_REMOVE):
-                    selected_labels[binary] = 0
-                    msg = f'clicked at {cords} on blob {val}'
-                elif(mode == MODE_INFO):
-                    global _func_info
-                    if(_func_info is None):
-                        stats = stats_on_blob_str(binary.astype(numpy.uint8))
-                    else:
-                        stats = _func_info(binary.astype(numpy.uint8))
+            if(mode == MODE_ADD):
+                selected_labels[binary] = data[binary]
+                msg = f'clicked at {coords} on blob {val}'
+            elif(mode == MODE_REMOVE):
+                selected_labels[binary] = 0
+                msg = f'clicked at {coords} on blob {val}'
+            elif(mode == MODE_INFO):
+                global _func_info
+                if(_func_info is None):
+                    stats = stats_on_blob_str(binary.astype(numpy.uint8))
+                else:
+                    stats = _func_info(binary.astype(numpy.uint8))
 
-                    msg = f'clicked at {cords} on blob {val} with stats {stats}'
-                    viewer.title = INFO_BLOBS + msg
-                selected_labels_layer.data = selected_labels
+                msg = f'clicked at {coords} on blob {val} with stats {stats}'
+                viewer.title = INFO_BLOBS + msg
+            selected_labels_layer.data = selected_labels
 
-            else:
-                msg = f'clicked at {cords} on background which is ignored'
-            layer.status = msg
+        else:
+            msg = f'clicked at {coords} on background which is ignored'
+        layer.status = msg
+
+    viewer.show(block=True)
 
     return selected_labels_layer.data
 

@@ -1,0 +1,7 @@
+wheel
+napari>=0.4.9
+pyqt5
+opencv-python
+matplotlib
+numpy
+mplcursors

@@ -15,40 +15,8 @@ import matplotlib as mpl
 import IPython as ip
 import datetime
 from ucvtk.utils.img_channels import is_single_channel, splitable_in_3
+from ucvtk.utils.matplotlib_backend import set_backend, set_backend_inline 
 
-_backend = ''
-
-# %%
-
-def _debug_print(*message):
-    #print(message)
-    return None
-
-# %%
-
-def update_backend():
-    global _backend
-    _backend = mpl.backends.matplotlib.backends.backend.title()
-    _debug_print('update_backend returns ', _backend)
-
-def set_backend_inline():
-    update_backend()
-    if(_backend.count('Inline') > 0):
-        _debug_print('no need to set backend')
-        return False, _backend
-    else:
-        if(_backend.count('Qt')):
-            backend_prev = 'qt'
-        else:
-            backend_prev = 'not implemented'
-
-        _debug_print('force backend inline, because current is ', backend_prev)
-        _set_backend('inline')
-        return True, backend_prev
-
-def _set_backend(backn):
-    ip.get_ipython().run_line_magic('matplotlib', backn)
-    update_backend()
 
 
 def print_image(image: np.ndarray, cmap:mpl.colors.Colormap = None, convert_3ch_image: bool = True, convert: int = cv2.COLOR_BGR2RGB, title: str =''):
@@ -85,7 +53,7 @@ def print_image(image: np.ndarray, cmap:mpl.colors.Colormap = None, convert_3ch_
         _print_one_image(image, cmap, convert_3ch_image, convert, title)
 
     if(rollback):
-        _set_backend(back_prev)
+        set_backend(back_prev)
 
 
 def _print_one_image(myImg, cmap = None, convert_3ch_image = True, convert = cv2.COLOR_BGR2RGB, title='') :
