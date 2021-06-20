@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """
 Interactive histograms within ROI
 using napari viewer.
@@ -10,69 +11,95 @@ using napari viewer.
 # %%
 import napari
 import numpy as np
-from ucvtk.utils.img_channels import is_single_channel, splitable_in_3, convert_BGR2RGB
+from ucvtk.utils.img_channels import splitable_in_3, convert_BGR2RGB, convert_RGB2BGR
 from ucvtk.roi.draw_roi_napari import _layer_rect
 from ucvtk.utils.matplotlib_backend import set_backend_qt, set_backend, NOT_IMPLEMENTED
-import datetime
 from typing import Callable
 import cv2
 import matplotlib.pyplot as plt
 import mplcursors
-from ucvtk.print.print_image_matplotlib import print_image
 
 # %%
 
-MODE_DRAG = "drag"
-_mode = None
-_func_info = None
 _fig = None
 _axs = None
 _nbChannels = 0
 _roi_layer = None
-_imgconv = None
 _img_layer = None
 _lines = None
 
+def _init_global():
+    global _fig, _axs, _nbChannels, _roi_layer, _img_layer, _lines
+    _fig = None
+    _axs = None
+    _nbChannels = 0
+    _roi_layer = None
+    _img_layer = None
+    _lines = None
 
-def open_interactive_histogram(img, convert_3ch_image = True, convert = cv2.COLOR_BGR2RGB, title = None):
 
-    global _imgconv
-    _imgconv = convert_BGR2RGB(img, convert_3ch_image, convert)
+def open_interactive_histogram(img: np.ndarray, convert_3ch_image: bool = True, convert: int = cv2.COLOR_BGR2RGB):
+    """
+    The goal of this tool is for analysing the grayvalue distribution
+    thanks to an interactive rectangle you can move on the image.
+    This is usefull when you want to check the contrasts and estimate
+    local threshold values (i.e. for color segementation, edges etc.)
+
+    This function opens a napari viewer with an interactive rectangle.
+    In parallel, there is a matplotlib figure showing, with 1 or 3 graphs(depending on the number of channels).
+    The histogram(s) of the grayvalues inside the rectangle are printed in the graph(s).
+    Resize and move the rectangle in the regions where you want to study the grayvalues distributions.
+
+    Parameters
+    ----------
+    img : np.ndarray
+        DESCRIPTION.
+    convert_3ch_image : bool, optional
+        DESCRIPTION. The default is True.
+    convert : int, optional
+        DESCRIPTION. The default is cv2.COLOR_BGR2RGB.
+
+    Returns
+    -------
+    None.
+
+    """
+
+    _init_global()
+
+    img_rgb = convert_BGR2RGB(img, convert_3ch_image, convert)
 
     global _nbChannels
-    if(splitable_in_3(_imgconv)):
+    if(splitable_in_3(img_rgb)):
         _nbChannels = 3
     else:
         _nbChannels = 1
-            
+
     rollback, back_prev = set_backend_qt()
 
-
     global _fig, _axs
-    _fig, _axs = plt.subplots(1, _nbChannels, figsize=(9, 3), sharey=True)
+    _fig, _axs = plt.subplots(1, _nbChannels, figsize=(15, 5), sharey=True)
+
+    if(_nbChannels == 1):
+        _axs = [_axs]
+
     _fig.suptitle('Grayvalues histograms.You can click somewhere on a line. Right-click to deselect.')
 
-    # _update_bars(imgconv)
-    # mplcursors.cursor(_axs[0])
-
-    
-        
     if(rollback and back_prev != NOT_IMPLEMENTED):
         set_backend(back_prev)
-    
+
     viewer = napari.Viewer()
-    global _img_layer 
-    _img_layer = viewer.add_image(_imgconv)
+
+    global _img_layer
+    _img_layer = viewer.add_image(img_rgb)
     viewer.title = 'Interactive histogram'
 
     global _roi_layer
-    _roi_layer = _layer_rect(_imgconv, viewer)
+    _roi_layer = _layer_rect(img_rgb, viewer)
     _roi_layer.mode = 'select'
 
     _update_bars_with_roi()
 
-    # TODO LATER : use roi_layer.to_masks
-    
     @_roi_layer.mouse_drag_callbacks.append
     def click_drag(layer, event):
         # print('mouse down')
@@ -85,95 +112,63 @@ def open_interactive_histogram(img, convert_3ch_image = True, convert = cv2.COLO
             yield
         # on release
         if dragged:
-            print('drag end')
+            # print('drag end')
             _update_bars_with_roi()
         # else:
             # print('clicked!')
-    
-    # @_roi_layer.mouse_drag_callbacks.append
-    # def mouse_drag(layer, event):
-    #     print("mouse_drag_callbacks {0}".format(datetime.datetime.now()))
-    #     # _update_bars_with_roi()
-            
-        
-    #     global _mode
-    #     _mode = MODE_DRAG
-    #     _roi_layer.mouse_move_callbacks.append(_mouse_move)
-        
 
-    viewer.show(block = True)
-    print("after run")
-    plt.close(_fig);
+    viewer.show(block=True)
+    plt.close(_fig)
 
 
 def _update_bars_with_roi():
-    global _roi_layer
-    if(_roi_layer != None):
-        print(_img_layer.data.shape)
-        print(_imgconv.shape)
+    global _roi_layer, _img_layer
+    if((_roi_layer is not None) and (_img_layer is not None)):
         mask_shape = (_img_layer.data.shape[0], _img_layer.data.shape[1])
-        print(mask_shape)
-        ms = _roi_layer.to_masks(mask_shape = mask_shape)[0,:,:]
-        ms_conv =  ms.astype(np.uint8)
-        print("count 0 = ", np.count_nonzero(ms_conv == 0))
-        print("count 1 = ", np.count_nonzero(ms_conv == 1))
-        print("sum == ", np.count_nonzero(ms_conv == 0) + np.count_nonzero(ms_conv == 1))
-        print("shape ", mask_shape[0] * mask_shape[1])
-        # print(type(ms_conv))
-        # print(ms_conv.shape)
-        # print(ms_conv.dtype)
-        # print(ms_conv)
-        _update_bars(_imgconv, ms_conv)
+        ms = _roi_layer.to_masks(mask_shape=mask_shape)[0, :, :]
+        ms_conv = ms.astype(np.uint8)
+        _update_bars(_img_layer.data, ms_conv)
 
-def _mouse_move(layer, event):
-    print("mouse move")
-    global _mode
-    if(_mode == MODE_DRAG):
-        print("TODO STOP UPDATE {0}".format(datetime.datetime.now()))
-        layer.mouse_move_callbacks.remove(_mouse_move)
-    _mode = None            
 
-    
-def _update_bars(img, mask = None):
-    
+def _update_bars(img_rgb, mask=None):
+
     global _nbChannels, _axs, _fig, _lines
-    
-    
+
     if(_lines is None):
         first_time = True
         _lines = []
     else:
         first_time = False
-         
-    
-    
-    
-    for c in range(0,_nbChannels):
-        # hist_full = cv2.calcHist([img],[c],mask,[256],[0,255]) #not working properly ... I probably do something wrong
-        hist_full = cv2.calcHist([img[:,:,c]],[0],mask,[256],[0,256])
-        
+
+    for c in range(0, _nbChannels):
+        # hist_full = cv2.calcHist([img_rgb],[c],mask,[256],[0,255]) #not working properly ... I probably do something wrong
+
+        if(_nbChannels == 1):
+            hist_full = cv2.calcHist([img_rgb], [0], mask, [256], [0, 256])
+        else:
+            hist_full = cv2.calcHist([img_rgb[:, :, c]], [0], mask, [256], [0, 256])
+
         hist_sum = hist_full.sum()
+
         if(hist_sum.size != 0):
             hist_full = hist_full / hist_sum
-        
+
         if(c % 3 == 0):
             colr = 'r'
         elif(c % 3 == 1):
             colr = 'g'
         elif(c % 3 == 2):
             colr = 'b'
-        
-        print("hist full {0} has mean value {1}".format(colr, hist_full.mean()))
-        print("hist full size {0}".format(hist_full.size))
-        
-        if(first_time) :
+
+        if(first_time):
             l, = _axs[c].plot(hist_full, color=colr)
             _lines.append(l)
             _axs[c].set_title("Channel {0}".format(c))
+            _axs[c].set_ylim([-0.1, 1.1])
             mplcursors.cursor(_axs[c], multiple=True)
             plt.show()
 
-        else :
+        else:
             _lines[c].set_ydata(hist_full)
             _fig.canvas.draw()
             _fig.canvas.flush_events()

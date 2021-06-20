@@ -13,7 +13,7 @@ import cv2
 
 # %%
 
-def convert_BGR2RGB(img: np.ndarray, convert_3ch_image: bool = True, convert: int = cv2.COLOR_BGR2RGB) -> np.ndarray:
+def _convert(img: np.ndarray, convert_3ch_image: bool = True, convert: int = cv2.COLOR_BGR2RGB) -> np.ndarray:
     if(convert_3ch_image
        and type(img) == np.ndarray
        and img.ndim == 3
@@ -22,6 +22,12 @@ def convert_BGR2RGB(img: np.ndarray, convert_3ch_image: bool = True, convert: in
     else:
         imgConv = img
     return imgConv
+
+def convert_BGR2RGB(img: np.ndarray, convert_3ch_image: bool = True, convert: int = cv2.COLOR_BGR2RGB) -> np.ndarray:
+    return _convert(img, convert_3ch_image=convert_3ch_image, convert=convert)
+
+def convert_RGB2BGR(img: np.ndarray, convert_3ch_image: bool = True, convert: int = cv2.COLOR_RGB2BGR) -> np.ndarray:
+    return _convert(img, convert_3ch_image=convert_3ch_image, convert=convert)
 
 def split_image(img: np.ndarray, channel_num: int) -> np.ndarray:
     if(splitable_in_3(img)):
