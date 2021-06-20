@@ -14,7 +14,6 @@ import numpy as np
 from ucvtk.utils.img_channels import splitable_in_3, convert_BGR2RGB, convert_RGB2BGR
 from ucvtk.roi.draw_roi_napari import _layer_rect
 from ucvtk.utils.matplotlib_backend import set_backend_qt, set_backend, NOT_IMPLEMENTED
-from typing import Callable
 import cv2
 import matplotlib.pyplot as plt
 import mplcursors
@@ -27,6 +26,7 @@ _nbChannels = 0
 _roi_layer = None
 _img_layer = None
 _lines = None
+
 
 def _init_global():
     global _fig, _axs, _nbChannels, _roi_layer, _img_layer, _lines
@@ -53,11 +53,13 @@ def open_interactive_histogram(img: np.ndarray, convert_3ch_image: bool = True, 
     Parameters
     ----------
     img : np.ndarray
-        DESCRIPTION.
+        The RGB image, or the BGR image (convert_3ch_image == True, convert == cv2.COLOR_BGR2RGB),
+        or the grayscale image.
     convert_3ch_image : bool, optional
-        DESCRIPTION. The default is True.
+        If you want to enable an opencv convertion. The default is True.
     convert : int, optional
-        DESCRIPTION. The default is cv2.COLOR_BGR2RGB.
+        The convertion to apply on the input image. See opencv cv2.cvtColor
+        documentation. The default is cv2.COLOR_BGR2RGB.
 
     Returns
     -------

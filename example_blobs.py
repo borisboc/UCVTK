@@ -39,7 +39,7 @@ retval, labels = cv2.connectedComponents(imgThres)
 # Press 's' (for 'stats') to get some informations on the blob you click onto.
 # Press 'a' (for 'adding') to add the blobs you click on to a selection (see return).
 # Press 'r' (for 'removing') to remove a blob you have previously selected.
-selected_blobs = open_blob_management(imgThres, labels)
+selected_blobs = open_blob_management(img, labels)
 
 # selected_blobs is the new label image (numpry.ndarray) of the blobs you have selected.
 

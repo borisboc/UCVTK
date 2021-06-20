@@ -19,23 +19,26 @@ from ucvtk.utils.img_channels import is_single_channel, splitable_in_3, convert_
 def _draw_shape(img, func_layer, convert_3ch_image = True, convert = cv2.COLOR_BGR2RGB, split_channels = True, title = None):
     imgconv = convert_BGR2RGB(img, convert_3ch_image, convert)
     layer = None
-    with napari.gui_qt():
-        viewer = napari.view_image(imgconv)
+    
+    viewer = napari.Viewer()
+    viewer.add_image(imgconv)
 
-        if title is None:
-            viewer.title = title
-        else:
-            viewer.title = 'Drawing ROI (Region Of Interest)'
+    if title is None:
+        viewer.title = title
+    else:
+        viewer.title = 'Drawing ROI (Region Of Interest)'
 
-        if(splitable_in_3(img) and split_channels):
-            ch0, ch1, ch2 = cv2.split(img)
-            viewer.add_image(ch0, name='channel 0', visible=False)
-            viewer.add_image(ch1, name='channel 1', visible=False)
-            viewer.add_image(ch2, name='channel 2', visible=False)
+    if(splitable_in_3(img) and split_channels):
+        ch0, ch1, ch2 = cv2.split(img)
+        viewer.add_image(ch0, name='channel 0', visible=False)
+        viewer.add_image(ch1, name='channel 1', visible=False)
+        viewer.add_image(ch2, name='channel 2', visible=False)
 
-        layer = func_layer(img, viewer)
-        layer.mode = 'select'
+    layer = func_layer(img, viewer)
+    layer.mode = 'select'
 
+    viewer.show(block=True)
+    
     if(type(layer.data) is list):
         return layer.data[0]
     else:
