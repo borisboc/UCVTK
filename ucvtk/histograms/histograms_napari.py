@@ -4,7 +4,7 @@
 Interactive histograms within ROI
 using napari viewer.
 
-@author: Boris Bocquet <b.bocquet@akeoplus.com>
+@author: Boris Bocquet <borisboc@free.fr>
 @license: LGPL V3.0
 """
 

@@ -2,7 +2,7 @@
 """
 Handling  matplotlib "inline" / QT backend.
 
-@author: Boris Bocquet <b.bocquet@akeoplus.com>
+@author: Boris Bocquet <borisboc@free.fr>
 @license: LGPL V3.0
 """
 

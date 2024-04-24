@@ -2,7 +2,7 @@
 """
 Printing images in the console using matplotlib in "inline" backend.
 
-@author: Boris Bocquet <b.bocquet@akeoplus.com>
+@author: Boris Bocquet <borisboc@free.fr>
 @license: LGPL V3.0
 """
 
