@@ -31,7 +31,7 @@ Tested with Python 3.8 (and I guess this should work with other python 3 version
 
 Then you can clone the codes of this repository : 
 ```shell
-git clone https://github.com/AKEOPLUS-boris-bocquet/UCVTK.git
+git clone https://github.com/borisboc/UCVTK.git
 ```
 Install the requirements : 
 ```shell
